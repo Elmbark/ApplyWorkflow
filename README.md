@@ -4,6 +4,29 @@ Automated job application pipeline. Reads applicant and company data from an Exc
 
 Badges: MIT • Python 3.11+ • FastAPI • React • Typst
 
+## Minimal setup (copy–paste)
+
+If you just want the shortest path to run the web UI with Docker:
+
+```bash
+# 1) Go to the project folder
+cd path/to/ApplyWorkflow
+
+# 2) Copy example config/files
+cp .env.example .env
+cp profile.json.example profile.json
+cp applications.example.xlsx applications.xlsx
+
+# 3) Add Gmail OAuth client (optional unless you plan to send emails)
+#    Download from Google Cloud Console and place as:
+#    credentials.json (in the project root)
+#    token.json will be created automatically on first auth
+
+# 4) Start
+docker compose up --build
+# Open http://localhost:8000
+```
+
 ## Quick start
 
 - Docker (no Typst install required):
