@@ -15,7 +15,7 @@ cd path/to/ApplyWorkflow
 # 2) Copy example config/files
 cp .env.example .env
 cp profile.json.example profile.json
-cp applications.example.xlsx applications.xlsx
+
 
 # 3) Add Gmail OAuth client (optional unless you plan to send emails)
 #    Download from Google Cloud Console and place as:
