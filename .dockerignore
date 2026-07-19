@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+
+# Local data / config
+output/
+applications.xlsx
+profile.json
+credentials.json
+token.json
+.env
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.npm/

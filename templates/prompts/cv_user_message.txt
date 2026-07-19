@@ -1,0 +1,15 @@
+{template}
+Your task:
+
+1. Analyze the job description.
+2. Identify the most relevant experiences, projects, and skills.
+3. Rewrite ONLY the existing content to better match the JD.
+4. Naturally incorporate important keywords.
+
+Rules:
+- DO NOT invent projects, skills, achievements, or experience.
+- Preserve ALL Typst syntax and formatting.
+- Return ONLY the Typst file.
+- Keep the document compilable.
+
+Keywords to consider adding: {keywords}

@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  apply_workflow:
+    build: .
+    container_name: apply_workflow
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount output directory to persist generated PDFs and emails on the host
+      - ./output:/app/output:Z
+      # Mount local data files so they can be edited on the host without rebuilding
+      - ./applications.xlsx:/app/applications.xlsx:Z
+      - ./profile.json:/app/profile.json:Z
+      - ./credentials.json:/app/credentials.json:Z
+      - ./token.json:/app/token.json:Z
+      - ./.env:/app/.env:Z
+    restart: unless-stopped

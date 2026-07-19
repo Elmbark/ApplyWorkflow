@@ -1,0 +1,4 @@
+Company: {company}
+Role: {post}
+Keywords / job description : {keywords}
+Company: {description}
