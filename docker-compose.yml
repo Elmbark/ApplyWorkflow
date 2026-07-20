@@ -1,18 +1,18 @@
-version: '3.8'
-
 services:
   apply_workflow:
     build: .
-    container_name: apply_workflow
     ports:
       - "8000:8000"
+    environment:
+      # One persistent directory avoids Docker creating directories when an
+      # optional file (for example credentials.json) does not exist.
+      DATA_DIR: /app/data
+      OUTPUT_DIR: /app/data/output
+      EXCEL_FILE: /app/data/applications.xlsx
+      PROFILE_FILE: /app/data/profile.json
+      GMAIL_CREDENTIALS_FILE: /app/data/credentials.json
+      GMAIL_TOKEN_FILE: /app/data/token.json
+      APP_CONFIG_FILE: /app/data/settings.json
     volumes:
-      # Mount output directory to persist generated PDFs and emails on the host
-      - ./output:/app/output:Z
-      # Mount local data files so they can be edited on the host without rebuilding
-      - ./applications.xlsx:/app/applications.xlsx:Z
-      - ./profile.json:/app/profile.json:Z
-      - ./credentials.json:/app/credentials.json:Z
-      - ./token.json:/app/token.json:Z
-      - ./.env:/app/.env:Z
+      - ./data:/app/data:Z
     restart: unless-stopped

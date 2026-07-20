@@ -33,6 +33,20 @@ if str(SRC_DIR) not in sys.path:
 app = FastAPI(title="apply_workflow UI", version="1.0.0")
 app.include_router(config_router)
 
+
+@app.on_event("startup")
+def initialise_data_files():
+    """Create optional runtime data safely inside the mounted data directory."""
+    settings.excel_path.parent.mkdir(parents=True, exist_ok=True)
+    if not settings.excel_path.exists():
+        import openpyxl
+        workbook = openpyxl.Workbook()
+        workbook.active.append([
+            "company", "post", "description", "email", "keywords",
+            "hr linkdin", "spontane",
+        ])
+        workbook.save(settings.excel_path)
+
 FRONTEND_DIR = ROOT_DIR / "frontend"
 DIST_DIR     = FRONTEND_DIR / "dist"
 

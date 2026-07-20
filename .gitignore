@@ -1,0 +1,23 @@
+# User data and secrets
+.env
+/data/
+credentials.json
+token.json
+profile.json
+applications.xlsx
+output/
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

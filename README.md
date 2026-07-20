@@ -32,10 +32,13 @@ Open-source pipeline to automate job applications: tailor CVs and emails with an
 ## Quick setup
 
 Docker (recommended):
-- cp .env.example .env && cp profile.json.example profile.json
-- Optional for sending: add credentials.json (Google OAuth Desktop client) to project root
-- docker compose up --build
-- Open http://localhost:8000 (API docs at /docs)
+- Run `docker compose up --build`
+- Open http://localhost:8000 (API docs at `/docs`)
+- Open **Settings** in the UI to add your API key, profile, and optional Google OAuth credentials
+
+Docker persists all user files under one `./data/` directory. Individual optional
+files are not bind-mounted, so Docker cannot accidentally create a directory named
+`.env`, `profile.json`, or `credentials.json` when that file is missing.
 
 Local (Typst required):
 - python -m venv .venv && source .venv/bin/activate
@@ -55,12 +58,12 @@ Web UI:
 
 ## Config & required files
 
-- .env  -> set LLM provider and key: GROQ_API_KEY or OPENAI_API_KEY
-- profile.json -> your details used in the templates
-- applications.xlsx -> your tracker (see applications.example.xlsx if present)
-- credentials.json -> only if you plan to send via Gmail (token.json created on first auth)
+Docker configuration is managed from the web UI and stored in `data/settings.json`.
+The app creates `data/applications.xlsx` automatically. Profile, OAuth credentials,
+tokens, and generated output also stay in `data/`; this directory is git-ignored.
 
-Note: .env, credentials.json, token.json, profile.json, and applications.xlsx are git-ignored.
+For local CLI use, copy `.env.example` to `.env` and `profile.json.example` to
+`profile.json`. Gmail credentials remain optional.
 
 ## Contributing
 

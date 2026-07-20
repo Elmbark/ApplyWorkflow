@@ -57,6 +57,30 @@ export const api = {
     return () => es.close()
   },
 
+  async getAppSettings() {
+    const r = await fetch('/api/config/app-settings')
+    if (!r.ok) throw new Error(await r.text())
+    return r.json()
+  },
+
+  async saveAppSettings(data) {
+    const r = await fetch('/api/config/app-settings', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!r.ok) throw new Error(await r.text())
+    return r.json()
+  },
+
+  async saveGmailCredentials(data) {
+    const r = await fetch('/api/config/gmail-credentials', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data }),
+    })
+    if (!r.ok) throw new Error(await r.text())
+    return r.json()
+  },
+
   async getProfile() {
     const r = await fetch('/api/config/profile')
     if (!r.ok) throw new Error(await r.text())

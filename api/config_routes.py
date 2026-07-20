@@ -22,6 +22,19 @@ class TemplateUpdate(BaseModel):
     content: str
 
 
+class AppSettingsUpdate(BaseModel):
+    llm_provider: str
+    groq_api_key: str = ""
+    openai_api_key: str = ""
+    groq_model: str = "openai/gpt-oss-120b"
+    openai_model: str = "gpt-4o-mini"
+    llm_temperature: float = 0.3
+
+
+class CredentialsUpdate(BaseModel):
+    data: dict
+
+
 class CvPreviewRequest(BaseModel):
     company: str | None = "Acme Inc"
     post: str | None = "Software Engineer"
@@ -41,8 +54,60 @@ def get_profile():
 
 @router.put("/profile")
 def save_profile(payload: ProfileUpdate):
+    settings.profile_path.parent.mkdir(parents=True, exist_ok=True)
     settings.profile_path.write_text(
         json.dumps(payload.data, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return {"ok": True}
+
+
+@router.get("/app-settings")
+def get_app_settings():
+    return {
+        "llm_provider": settings.LLM_PROVIDER,
+        "groq_model": settings.GROQ_MODEL,
+        "openai_model": settings.OPENAI_MODEL,
+        "llm_temperature": settings.LLM_TEMPERATURE,
+        "groq_api_key_set": bool(settings.GROQ_API_KEY),
+        "openai_api_key_set": bool(settings.OPENAI_API_KEY),
+        "credentials_set": settings.credentials_path.is_file(),
+    }
+
+
+@router.put("/app-settings")
+def save_app_settings(payload: AppSettingsUpdate):
+    provider = payload.llm_provider.lower().strip()
+    if provider not in {"groq", "openai"}:
+        raise HTTPException(400, "Provider must be groq or openai")
+    current = {}
+    if settings.app_config_path.is_file():
+        try:
+            current = json.loads(settings.app_config_path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            pass
+    values = {
+        **current,
+        "LLM_PROVIDER": provider,
+        "GROQ_MODEL": payload.groq_model.strip(),
+        "OPENAI_MODEL": payload.openai_model.strip(),
+        "LLM_TEMPERATURE": payload.llm_temperature,
+    }
+    # An empty secret means "keep the existing secret", not erase it.
+    if payload.groq_api_key:
+        values["GROQ_API_KEY"] = payload.groq_api_key.strip()
+    if payload.openai_api_key:
+        values["OPENAI_API_KEY"] = payload.openai_api_key.strip()
+    settings.save_config(values)
+    return {"ok": True}
+
+
+@router.put("/gmail-credentials")
+def save_gmail_credentials(payload: CredentialsUpdate):
+    if payload.data.get("installed") is None and payload.data.get("web") is None:
+        raise HTTPException(400, "Expected a Google OAuth client JSON file")
+    settings.credentials_path.parent.mkdir(parents=True, exist_ok=True)
+    settings.credentials_path.write_text(
+        json.dumps(payload.data, indent=2), encoding="utf-8"
     )
     return {"ok": True}
 

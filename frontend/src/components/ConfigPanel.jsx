@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Settings, X, Plus, Trash2, Save, User, Mail, FileCode, AlertTriangle } from 'lucide-react'
+import { Settings, X, Plus, Trash2, Save, User, Mail, FileCode, AlertTriangle, SlidersHorizontal } from 'lucide-react'
 import { api } from '../api'
 
 const DEFAULT_PROFILE = {
@@ -35,6 +35,8 @@ export function ConfigPanel({ onClose }) {
   const [previewOpen, setPreviewOpen] = useState(true)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewKey, setPreviewKey] = useState(0)
+  const [appSettings, setAppSettings] = useState({ llm_provider: 'groq', groq_api_key: '', openai_api_key: '', groq_model: '', openai_model: '', llm_temperature: 0.3 })
+  const [credentials, setCredentials] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -42,9 +44,10 @@ export function ConfigPanel({ onClose }) {
       api.getEmailTemplate(),
       api.getCvTemplate(),
       api.getRequiredFields(),
-      api.listCvTemplates()
+      api.listCvTemplates(),
+      api.getAppSettings()
     ])
-      .then(([p, t, cv, req, list]) => {
+      .then(([p, t, cv, req, list, appConfig]) => {
         const source = Object.keys(p).length > 0 ? p : DEFAULT_PROFILE
         setProfile(Object.entries(source).map(([key, value]) => ({ key, value })))
         setTemplate(t.content)
@@ -52,6 +55,7 @@ export function ConfigPanel({ onClose }) {
         setRequired(req.fields)
         setCvList(list.items || [])
         setCvPath(list.current || '')
+        setAppSettings(s => ({ ...s, ...appConfig }))
         setLoading(false)
       })
       .catch(e => { setMsg(`⚠ ${e.message}`); setLoading(false) })
@@ -137,6 +141,17 @@ export function ConfigPanel({ onClose }) {
     setPreviewLoading(false)
   }
 
+  const saveGeneral = async () => {
+    setSaving(true)
+    try {
+      await api.saveAppSettings(appSettings)
+      if (credentials.trim()) await api.saveGmailCredentials(JSON.parse(credentials))
+      setCredentials('')
+      flash('✅ Configuration saved')
+    } catch (e) { flash(`⚠ ${e.message}`) }
+    setSaving(false)
+  }
+
   const updateField = (i, key, value) =>
     setProfile(p => p.map((f, idx) => idx === i ? { key, value } : f))
   const removeField = (i) => setProfile(p => p.filter((_, idx) => idx !== i))
@@ -148,6 +163,9 @@ export function ConfigPanel({ onClose }) {
       <div style={s.modal} onClick={e => e.stopPropagation()}>
         <div style={s.header}>
           <div style={s.tabs}>
+            <button style={{ ...s.tab, ...(tab === 'general' ? s.tabActive : {}) }} onClick={() => setTab('general')}>
+              <SlidersHorizontal size={14} /> General
+            </button>
             <button style={{ ...s.tab, ...(tab === 'profile' ? s.tabActive : {}) }} onClick={() => setTab('profile')}>
               <User size={14} /> Profile
               {missing.length > 0 && <span style={s.badge}>{missing.length}</span>}
@@ -186,6 +204,31 @@ export function ConfigPanel({ onClose }) {
 
         <div style={s.body}>
           {loading && <div style={s.muted}>Loading…</div>}
+
+          {!loading && tab === 'general' && (
+            <>
+              <div style={s.fieldList}>
+                <label style={s.hint}>LLM provider</label>
+                <select style={s.select} value={appSettings.llm_provider} onChange={e => setAppSettings({ ...appSettings, llm_provider: e.target.value })}>
+                  <option value="groq">Groq</option><option value="openai">OpenAI</option>
+                </select>
+                <label style={s.hint}>Groq API key {appSettings.groq_api_key_set && '(already configured)'}</label>
+                <input type="password" style={s.valInput} placeholder="Leave blank to keep existing key" value={appSettings.groq_api_key} onChange={e => setAppSettings({ ...appSettings, groq_api_key: e.target.value })} />
+                <label style={s.hint}>Groq model</label>
+                <input style={s.valInput} value={appSettings.groq_model} onChange={e => setAppSettings({ ...appSettings, groq_model: e.target.value })} />
+                <label style={s.hint}>OpenAI API key {appSettings.openai_api_key_set && '(already configured)'}</label>
+                <input type="password" style={s.valInput} placeholder="Leave blank to keep existing key" value={appSettings.openai_api_key} onChange={e => setAppSettings({ ...appSettings, openai_api_key: e.target.value })} />
+                <label style={s.hint}>OpenAI model</label>
+                <input style={s.valInput} value={appSettings.openai_model} onChange={e => setAppSettings({ ...appSettings, openai_model: e.target.value })} />
+                <label style={s.hint}>Gmail OAuth credentials JSON {appSettings.credentials_set && '(already configured)'}</label>
+                <textarea style={{ ...s.textarea, height: 130 }} value={credentials} onChange={e => setCredentials(e.target.value)} placeholder="Paste the downloaded Google OAuth client JSON; leave blank to keep existing" />
+              </div>
+              <div style={{ ...s.actions, justifyContent: 'flex-end' }}>
+                <button style={s.saveBtn} disabled={saving} onClick={saveGeneral}><Save size={14} /> {saving ? 'Saving…' : 'Save configuration'}</button>
+              </div>
+              <p style={s.hint}>Secrets are stored only in your persistent data directory and are never returned to the browser.</p>
+            </>
+          )}
 
           {!loading && tab === 'profile' && (
             <>

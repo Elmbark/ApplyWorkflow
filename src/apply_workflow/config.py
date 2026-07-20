@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -25,11 +26,12 @@ class Settings(BaseSettings):
     TYPST_BINARY_PATH: str = "typst"
 
     # ── File paths ────────────────────────────────────────────────────────
+    DATA_DIR: str = "."
     EXCEL_FILE: str = "applications.xlsx"
+    PROFILE_FILE: str = "profile.json"
     CV_TEMPLATE_FILE: str = "templates/cv_template.typ"
     OUTPUT_DIR: str = "output"
-
-
+    APP_CONFIG_FILE: str = "settings.json"
 
     model_config = SettingsConfigDict(
         env_file=str(ROOT_DIR / ".env"),
@@ -63,7 +65,30 @@ class Settings(BaseSettings):
 
     @property
     def profile_path(self) -> Path:
-        return ROOT_DIR / "profile.json"
+        return self.resolve(self.PROFILE_FILE)
+
+    @property
+    def app_config_path(self) -> Path:
+        return self.resolve(self.APP_CONFIG_FILE)
+
+    def load_saved_config(self) -> None:
+        """Apply UI-managed settings after environment defaults are loaded."""
+        if not self.app_config_path.is_file():
+            return
+        try:
+            values = json.loads(self.app_config_path.read_text(encoding="utf-8"))
+            for key, value in values.items():
+                if key in EDITABLE_SETTINGS:
+                    setattr(self, key, value)
+        except (OSError, ValueError, TypeError):
+            pass
+
+    def save_config(self, values: dict) -> None:
+        clean = {key: value for key, value in values.items() if key in EDITABLE_SETTINGS}
+        self.app_config_path.parent.mkdir(parents=True, exist_ok=True)
+        self.app_config_path.write_text(json.dumps(clean, indent=2), encoding="utf-8")
+        for key, value in clean.items():
+            setattr(self, key, value)
 
     def load_profile(self) -> dict[str, str]:
         import json
@@ -76,4 +101,10 @@ class Settings(BaseSettings):
             return {}
 
 
+EDITABLE_SETTINGS = {
+    "LLM_PROVIDER", "GROQ_API_KEY", "OPENAI_API_KEY", "GROQ_MODEL",
+    "OPENAI_MODEL", "LLM_TEMPERATURE",
+}
+
 settings = Settings()
+settings.load_saved_config()
