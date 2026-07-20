@@ -29,22 +29,17 @@ Open-source pipeline to automate job applications: tailor CVs and emails with an
 - FastAPI backend + React web UI
 - Docker image includes Typst for zero local setup
 
-## Quick setup
+## Quick start
 
-Docker (recommended):
-- Run `docker compose up --build`
-- Open http://localhost:8000 (API docs at `/docs`)
-- Open **Settings** in the UI to add your API key, profile, and optional Google OAuth credentials
+```bash
+docker-compose up --build
+```
 
-Docker persists all user files under one `./data/` directory. Individual optional
-files are not bind-mounted, so Docker cannot accidentally create a directory named
-`.env`, `profile.json`, or `credentials.json` when that file is missing.
+Then open http://localhost:8000 and use **Settings** to add your API key, profile,
+and optional Google OAuth credentials. API documentation is available at
+http://localhost:8000/docs.
 
-Local (Typst required):
-- python -m venv .venv && source .venv/bin/activate
-- pip install -r requirements.txt
-- cp .env.example .env && cp profile.json.example profile.json
-- python run_api.py
+Docker persists all user files under `./data/`.
 
 ## Usage
 
