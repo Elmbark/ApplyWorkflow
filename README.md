@@ -2,6 +2,10 @@
   <img src="frontend/public/logo.svg" alt="ApplyWorkflow Logo" width="180" />
 </p>
 
+[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+[![Npm package version](https://badgen.net/npm/v/express)](https://npmjs.com/package/express)
+
 # ApplyWorkflow
 
 Open-source pipeline to automate job applications: tailor CVs and emails with an LLM, compile PDFs with Typst, and optionally send via Gmail  from CLI or web UI.
