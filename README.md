@@ -55,10 +55,10 @@ Web UI:
 
 ## Config & required files
 
-- .env — set LLM provider and key: GROQ_API_KEY or OPENAI_API_KEY
-- profile.json — your details used in the templates
-- applications.xlsx — your tracker (see applications.example.xlsx if present)
-- credentials.json — only if you plan to send via Gmail (token.json created on first auth)
+- .env  -> set LLM provider and key: GROQ_API_KEY or OPENAI_API_KEY
+- profile.json -> your details used in the templates
+- applications.xlsx -> your tracker (see applications.example.xlsx if present)
+- credentials.json -> only if you plan to send via Gmail (token.json created on first auth)
 
 Note: .env, credentials.json, token.json, profile.json, and applications.xlsx are git-ignored.
 
