@@ -2,10 +2,20 @@
   <img src="frontend/public/logo.svg" alt="ApplyWorkflow Logo" width="180" />
 </p>
 
-[![MIT license](https://img.shields.io/badge/License-MIT-blue.svg)](https://lbesson.mit-license.org/)
-[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
-[![Npm package version](https://badgen.net/npm/v/express)](https://npmjs.com/package/express)
-[![Open Source Love svg1](https://badges.frapsoft.com/os/v1/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
+<p align="center">
+  <a href="https://lbesson.mit-license.org/">
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License" />
+  </a>
+  <a href="https://www.python.org/">
+    <img src="https://img.shields.io/badge/Made%20with-Python-1f425f.svg" alt="Made with Python" />
+  </a>
+  <a href="https://npmjs.com/package/express">
+    <img src="https://badgen.net/npm/v/express" alt="NPM Version" />
+  </a>
+  <a href="https://github.com/ellerbrock/open-source-badges/">
+    <img src="https://badges.frapsoft.com/os/v1/open-source.svg?v=103" alt="Open Source Love" />
+  </a>
+</p>
 
 # ApplyWorkflow
 
