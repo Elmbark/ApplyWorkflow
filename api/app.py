@@ -10,7 +10,7 @@ import json
 import sys
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import PlainTextResponse
@@ -84,6 +84,52 @@ async def list_jobs():
         raise HTTPException(500, str(exc))
 
 
+
+
+@app.get("/api/jobs/export")
+async def export_jobs():
+    """Download the current company list as an Excel file."""
+    if not settings.excel_path.exists():
+        raise HTTPException(404, "Company list not found")
+    return FileResponse(
+        str(settings.excel_path),
+        filename="company-list.xlsx",
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
+@app.post("/api/jobs/import")
+async def import_jobs(request: Request):
+    """Append rows from an uploaded .xlsx company list."""
+    import tempfile
+    import openpyxl
+    from apply_workflow.utils.excel import read_applications, append_applications
+
+    content = await request.body()
+    if not content:
+        raise HTTPException(400, "Choose an Excel file")
+    if len(content) > 10 * 1024 * 1024:
+        raise HTTPException(413, "Excel file must be smaller than 10 MB")
+
+    temp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False) as tmp:
+            tmp.write(content)
+            temp_path = tmp.name
+        rows = read_applications(temp_path)
+        if not rows:
+            raise HTTPException(400, "No valid rows found. A Company column is required.")
+        append_applications(str(settings.excel_path), [row.model_dump() for row in rows])
+        return {"ok": True, "imported": len(rows)}
+    except HTTPException:
+        raise
+    except (ValueError, KeyError, openpyxl.utils.exceptions.InvalidFileException) as exc:
+        raise HTTPException(400, f"Invalid Excel file: {exc}")
+    except Exception as exc:
+        raise HTTPException(400, f"Could not import Excel file: {exc}")
+    finally:
+        if temp_path:
+            Path(temp_path).unlink(missing_ok=True)
 
 
 @app.post("/api/jobs")

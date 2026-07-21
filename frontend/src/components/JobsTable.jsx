@@ -1,5 +1,5 @@
-import { useState, useEffect, Fragment } from 'react'
-import { Plus, X, Pencil, Trash2, Check } from 'lucide-react'
+import { useState, useEffect, Fragment, useRef } from 'react'
+import { Plus, X, Pencil, Trash2, Check, Upload, Download } from 'lucide-react'
 import { api } from '../api'
 
 const PER_PAGE = 12
@@ -18,6 +18,9 @@ export function JobsTable({ onRowClick }) {
   const [processingRow, setProcessingRow] = useState(null)
   const [editingRow, setEditingRow] = useState(null)
   const [editForm, setEditForm] = useState(EMPTY_FORM)
+  const [importing, setImporting] = useState(false)
+  const [notice, setNotice] = useState('')
+  const fileInput = useRef(null)
 
   const load = () => {
     setLoading(true); setError('')
@@ -89,6 +92,27 @@ export function JobsTable({ onRowClick }) {
     }
   }
 
+  const handleImport = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    if (!file.name.toLowerCase().endsWith('.xlsx')) {
+      setError('Please choose an .xlsx Excel file')
+      return
+    }
+    setImporting(true); setError(''); setNotice('')
+    try {
+      const result = await api.importJobs(file)
+      setNotice(`${result.imported} ${result.imported === 1 ? 'company' : 'companies'} imported`)
+      setPage(1)
+      load()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setImporting(false)
+    }
+  }
+
   const handleDelete = async (row, e) => {
     e.stopPropagation()
     if (!window.confirm(`Delete application for ${row.company}?`)) return
@@ -113,14 +137,23 @@ export function JobsTable({ onRowClick }) {
   return (
     <div style={s.card}>
       <div style={s.header}>
-        <span style={s.title}>Applications</span>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <span style={s.title}>Company List</span>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input ref={fileInput} type="file" accept=".xlsx" hidden onChange={handleImport} />
+          <button style={s.smBtn} disabled={importing} onClick={() => fileInput.current?.click()} title="Append companies from Excel">
+            <Upload size={12} /> {importing ? 'Importing…' : 'Import Excel'}
+          </button>
+          <a style={{ ...s.smBtn, textDecoration: 'none' }} href={api.exportJobsUrl} download>
+            <Download size={12} /> Export Excel
+          </a>
           <button style={s.smBtn} onClick={() => setAdding(a => !a)}>
-            {adding ? <><X size={12} /> Cancel</> : <><Plus size={12} /> Add</>}
+            {adding ? <><X size={12} /> Cancel</> : <><Plus size={12} /> Add company</>}
           </button>
           <button style={s.smBtn} onClick={load}>↺ Refresh</button>
         </div>
       </div>
+
+      {notice && <div style={s.notice}>✓ {notice}</div>}
 
       {adding && (
         <div style={s.form}>
@@ -139,7 +172,7 @@ export function JobsTable({ onRowClick }) {
           <div style={s.formActions}>
             {formError && <span style={s.formError}>⚠ {formError}</span>}
             <button style={{ ...s.saveBtn, opacity: saving ? .6 : 1 }} disabled={saving} onClick={submitForm}>
-              {saving ? 'Adding…' : 'Add row'}
+              {saving ? 'Adding…' : 'Add company'}
             </button>
           </div>
         </div>
@@ -307,6 +340,7 @@ const s = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', background: 'rgba(255,255,255,.04)', borderBottom: '1px solid rgba(255,255,255,.08)' },
   title: { fontSize: 11, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '.6px' },
   smBtn: { display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, padding: '4px 10px', background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 6, color: '#94a3b8', cursor: 'pointer' },
+  notice: { padding: '8px 20px', fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,.08)', borderBottom: '1px solid rgba(34,197,94,.15)' },
   form: { padding: '14px 20px', borderBottom: '1px solid rgba(255,255,255,.08)', background: 'rgba(255,255,255,.02)', display: 'flex', flexDirection: 'column', gap: 10 },
   formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
   input: { padding: '8px 10px', background: '#0b0f1a', border: '1px solid rgba(255,255,255,.1)', borderRadius: 7, color: '#e2e8f0', fontSize: 13, fontFamily: 'inherit' },

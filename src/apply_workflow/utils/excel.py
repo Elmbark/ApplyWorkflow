@@ -131,25 +131,29 @@ def read_applications_with_rows(excel_path: str) -> list[dict]:
     ]
 
 
-def append_application(excel_path: str, data: dict) -> None:
-    """Append one row to the Excel file, matching existing header order/casing."""
+def append_applications(excel_path: str, rows: list[dict]) -> None:
+    """Append several rows in one workbook save, matching its header order."""
     path = _require_file(excel_path)
-
     wb = openpyxl.load_workbook(path)
     ws = wb.active
-
     norm_headers = _read_headers(ws)
     field_to_col = _field_to_col(norm_headers)
 
-    row_values = [""] * len(norm_headers)
-    for field, value in data.items():
-        col_idx = field_to_col.get(field)
-        if col_idx is not None:
-            row_values[col_idx - 1] = value
+    for data in rows:
+        row_values = [""] * len(norm_headers)
+        for field, value in data.items():
+            col_idx = field_to_col.get(field)
+            if col_idx is not None:
+                row_values[col_idx - 1] = value
+        ws.append(row_values)
 
-    ws.append(row_values)
     wb.save(path)
-    logger.info("Appended new application row → %s", data.get("company"))
+    logger.info("Appended %d application row(s)", len(rows))
+
+
+def append_application(excel_path: str, data: dict) -> None:
+    """Append one row to the Excel file, matching existing header order/casing."""
+    append_applications(excel_path, [data])
 
 
 def update_application(excel_path: str, excel_row: int, data: dict) -> None:

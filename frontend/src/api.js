@@ -171,6 +171,21 @@ export const api = {
     return r.json()
   },
 
+  async importJobs(file) {
+    const r = await fetch('/api/jobs/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+      body: file,
+    })
+    if (!r.ok) {
+      const body = await r.json().catch(() => null)
+      throw new Error(body?.detail || 'Import failed')
+    }
+    return r.json()
+  },
+
+  exportJobsUrl: '/api/jobs/export',
+
   async addJob(data) {
     const r = await fetch('/api/jobs', {
       method: 'POST',
